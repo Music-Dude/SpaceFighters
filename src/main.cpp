@@ -1,10 +1,9 @@
 #include <iostream>
 #include <vector>
-#include <cmath>
 #include <SFML/Graphics.hpp>
 
 #include "Entity.hpp"
-#include "Mouse.hpp"
+#include "Math.hpp"
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
@@ -17,6 +16,14 @@ std::vector<Entity> astroids, bullets;
 Mouse mouse;
 
 sf::Vector2i windowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+
+enum class GameState
+{
+	Title,
+	Play,
+	Pause,
+	GameOver
+};
 
 void drawScreen(sf::RenderWindow &scr)
 {
@@ -66,6 +73,91 @@ void drawScreen(sf::RenderWindow &scr)
 	scr.draw(player);
 }
 
+void play(sf::RenderWindow &window, sf::Event &ev)
+{
+	while (window.pollEvent(ev))
+	{
+		switch (ev.type)
+		{
+		case sf::Event::Closed:
+			window.close();
+			break;
+		case sf::Event::MouseButtonPressed:
+			if (ev.mouseButton.button == sf::Mouse::Left)
+				mouse.lDown = true;
+			if (ev.mouseButton.button == sf::Mouse::Right)
+				mouse.rDown = true;
+			break;
+		case sf::Event::MouseButtonReleased:
+			if (ev.mouseButton.button == sf::Mouse::Left)
+				mouse.lDown = false;
+			if (ev.mouseButton.button == sf::Mouse::Right)
+				mouse.rDown = false;
+			break;
+		case sf::Event::MouseMoved:
+			mouse.x = ev.mouseMove.x;
+			mouse.y = ev.mouseMove.y;
+			break;
+		}
+	}
+
+	// Rotate player to face mouse
+	player.setRotation(degrees(atan2(mouse.y - player.getPosition().y, mouse.x - player.getPosition().x)) + 90);
+
+	// Chance to spawn astroids
+	if (!(rand() % 100))
+	{
+		astroid1.setPosition(rand() % windowSize.x, 1);
+		astroid1.setVelocity(rand() % 10, (rand() % 10) / 10 + 1);
+		astroids.push_back(astroid1);
+	}
+	if (!(rand() % 175))
+	{
+		astroid2.setPosition(rand() % windowSize.x, 1);
+		astroid2.setVelocity(rand() % 10, (rand() % 10) / 10 + 1);
+		astroids.push_back(astroid2);
+	}
+
+	// limit shooting to 10/s
+	if (clck.getElapsedTime().asSeconds() > 0.1 && mouse.lDown)
+	{
+		bullet.setPosition(player.getPosition());
+		bullet.setVelocity(0, 0);
+		bullet.launch(8, player.getRotation() - 90);
+		bullets.push_back(bullet);
+		clck.restart();
+	}
+
+	// Keyboard movement
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+		player.launch(0.2, 270);
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+		player.launch(0.2, 180);
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+		player.launch(0.2, 90);
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+		player.launch(0.2, 0);
+
+	player.update(windowSize);
+
+	drawScreen(window);
+	window.display();
+}
+
+void game(sf::RenderWindow &window, sf::Event &ev, GameState state)
+{
+	switch (state)
+	{
+	case GameState::Play:
+		play(window, ev);
+	default:
+		break;
+	}
+
+	if (window.isOpen())
+		game(window, ev, state);
+}
+
 int main()
 {
 	srand(time(NULL));
@@ -104,75 +196,7 @@ int main()
 	screen.setFramerateLimit(165);
 	screen.setVerticalSyncEnabled(true);
 
-	while (screen.isOpen())
-	{
-		while (screen.pollEvent(ev))
-		{
-			switch (ev.type)
-			{
-			case sf::Event::Closed:
-				screen.close();
-				break;
-			case sf::Event::MouseButtonPressed:
-				if (ev.mouseButton.button == sf::Mouse::Left)
-					mouse.lDown = true;
-				if (ev.mouseButton.button == sf::Mouse::Right)
-					mouse.rDown = true;
-				break;
-			case sf::Event::MouseButtonReleased:
-				if (ev.mouseButton.button == sf::Mouse::Left)
-					mouse.lDown = false;
-				if (ev.mouseButton.button == sf::Mouse::Right)
-					mouse.rDown = false;
-				break;
-			case sf::Event::MouseMoved:
-				mouse.x = ev.mouseMove.x;
-				mouse.y = ev.mouseMove.y;
-				break;
-			}
-		}
-
-		// Rotate player to face mouse
-		player.setRotation(atan2(mouse.y - player.getPosition().y, mouse.x - player.getPosition().x) * 180 / M_PI + 90);
-
-		// Chance to spawn astroids
-		if (!(rand() % 100))
-		{
-			astroid1.setPosition(rand() % windowSize.x, 1);
-			astroid1.setVelocity(rand() % 10, (rand() % 10) / 10 + 1);
-			astroids.push_back(astroid1);
-		}
-		if (!(rand() % 175))
-		{
-			astroid2.setPosition(rand() % windowSize.x, 1);
-			astroid2.setVelocity(rand() % 10, (rand() % 10) / 10 + 1);
-			astroids.push_back(astroid2);
-		}
-
-		// limit shooting to 10/s
-		if (clck.getElapsedTime().asSeconds() > 0.1 && mouse.lDown)
-		{
-			bullet.setPosition(player.getPosition());
-			bullet.setVelocity(0, 0);
-			bullet.launch(8, player.getRotation() - 90);
-			bullets.push_back(bullet);
-			clck.restart();
-		}
-
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
-			player.launch(0.2, 270);
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
-			player.launch(0.2, 180);
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
-			player.launch(0.2, 90);
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-			player.launch(0.2, 0);
-
-		player.update(windowSize);
-
-		drawScreen(screen);
-		screen.display();
-	}
+	game(screen, ev, GameState::Play);
 
 	return 0;
 }

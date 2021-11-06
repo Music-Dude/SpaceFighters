@@ -1,5 +1,5 @@
-#include <cmath>
 #include "Entity.hpp"
+#include "Math.hpp"
 
 Entity::Entity()
 	: velocity(sf::Vector2f(0, 0))
@@ -33,10 +33,10 @@ void Entity::update(sf::Vector2i windowSize)
 
 void Entity::launch(float magnitude, float angle)
 {
-	angle *= (M_PI / 180);
+	float rads = radians(angle);
 
-	velocity.x += magnitude * cos(angle);
-	velocity.y += magnitude * sin(angle);
+	velocity.x += magnitude * cos(rads);
+	velocity.y += magnitude * sin(rads);
 }
 
 void Entity::setVelocity(sf::Vector2f &p_velocity)
