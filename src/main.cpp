@@ -110,7 +110,7 @@ void play(sf::RenderWindow &window, sf::Event &ev, GameState &state)
 	// limit shooting to 10/s
 	if (clck.getElapsedTime().asSeconds() > 0.1 && mouse.lDown)
 	{
-		bullet.setPosition(player.getPosition());
+		bullet.setPosition(player.getPosition().x - bullet.getGlobalBounds().width / 2, player.getPosition().y - bullet.getGlobalBounds().height / 2);
 		bullet.setVelocity(0, 0);
 		bullet.launch(8, player.getRotation() - 90);
 		bullets.push_back(bullet);
@@ -234,8 +234,9 @@ int main()
 	titleText.setOutlineThickness(4);
 
 	pressToPlay.setPosition((windowSize.x / 2) - (pressToPlay.getGlobalBounds().width / 2), windowSize.y - (pressToPlay.getGlobalBounds().height * 2));
-	pressToPlay.setOutlineColor(sf::Color(0xaaaabb22));
-	pressToPlay.setOutlineThickness(3);
+	pressToPlay.setFillColor(sf::Color(0xffffefff));
+	pressToPlay.setOutlineColor(sf::Color(0xffffff88));
+	pressToPlay.setOutlineThickness(2);
 
 	// Create non resizable window
 	sf::RenderWindow screen(sf::VideoMode(windowSize.x, windowSize.y), "RPG Thingy", sf::Style::None);
