@@ -9,6 +9,7 @@
 #define WINDOW_HEIGHT 600
 
 sf::Texture bgTexture, playerTexture, bulletTexture, astroid1Texture, astroid2Texture;
+sf::Font font;
 sf::Clock clck;
 
 Entity bgSprite, player, bullet, astroid1, astroid2;
@@ -16,6 +17,9 @@ std::vector<Entity> astroids, bullets;
 Mouse mouse;
 
 sf::Vector2i windowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+
+sf::Text titleText("Space Fighters", font, 72U),
+	pressToPlay("Press any key to play", font, 40U);
 
 enum class GameState
 {
@@ -25,55 +29,38 @@ enum class GameState
 	GameOver
 };
 
-void drawScreen(sf::RenderWindow &scr)
+void title(sf::RenderWindow &window, sf::Event &ev, GameState &state)
 {
-	scr.clear(sf::Color::Black);
-	scr.draw(bgSprite);
+	titleText.setPosition(sin(clck.getElapsedTime().asSeconds()) * 50 + (windowSize.x / 2) - titleText.getGlobalBounds().width / 2, sin(clck.getElapsedTime().asSeconds() * 2) * 40 + titleText.getGlobalBounds().height);
 
-	for (auto astr = astroids.begin(); astr != astroids.end();)
+	window.draw(bgSprite);
+	window.draw(titleText);
+
+	if (sin(clck.getElapsedTime().asSeconds() * 4) > 0.2)
+		window.draw(pressToPlay);
+
+	window.display();
+
+	while (window.pollEvent(ev))
 	{
-		astr->update(windowSize);
-
-		if (astr->getGlobalBounds().left > windowSize.x || astr->getGlobalBounds().left < 0 || astr->getGlobalBounds().top > windowSize.y || astr->getGlobalBounds().top < 0)
-			astroids.erase(astr);
-		else
+		switch (ev.type)
 		{
-			scr.draw(*astr);
-			astr++;
+		case sf::Event::Closed:
+			window.close();
+			break;
+		case sf::Event::MouseButtonReleased:
+		case sf::Event::KeyReleased:
+			// lower opacity means motion blur
+			bgSprite.setColor(sf::Color(0xffffff55));
+			state = GameState::Play;
+			return;
+		default:
+			break;
 		}
 	}
-
-	for (auto bull = bullets.begin(); bull != bullets.end();)
-	{
-		bull->update(windowSize);
-
-		if (bull->getGlobalBounds().left > windowSize.x || bull->getGlobalBounds().left < 0 || bull->getGlobalBounds().top > windowSize.y || bull->getGlobalBounds().top < 0)
-			goto delBullet;
-
-		for (auto astr = astroids.begin(); astr != astroids.end();)
-		{
-			if (bull->getGlobalBounds().intersects(astr->getGlobalBounds()))
-			{
-				astroids.erase(astr);
-				goto delBullet;
-			}
-			else
-				astr++;
-		}
-
-		scr.draw(*bull);
-
-		bull++;
-		continue;
-
-	delBullet:
-		bullets.erase(bull);
-	}
-
-	scr.draw(player);
 }
 
-void play(sf::RenderWindow &window, sf::Event &ev)
+void play(sf::RenderWindow &window, sf::Event &ev, GameState &state)
 {
 	while (window.pollEvent(ev))
 	{
@@ -142,7 +129,52 @@ void play(sf::RenderWindow &window, sf::Event &ev)
 
 	player.update(windowSize);
 
-	drawScreen(window);
+	window.draw(bgSprite);
+
+	for (auto astr = astroids.begin(); astr != astroids.end();)
+	{
+		astr->update(windowSize);
+
+		if (astr->getGlobalBounds().intersects(player.getGlobalBounds()))
+			state = GameState::GameOver;
+
+		if (astr->getGlobalBounds().left > windowSize.x || astr->getGlobalBounds().left < 0 || astr->getGlobalBounds().top > windowSize.y || astr->getGlobalBounds().top < 0)
+			astroids.erase(astr);
+		else
+		{
+			window.draw(*astr);
+			astr++;
+		}
+	}
+
+	for (auto bull = bullets.begin(); bull != bullets.end();)
+	{
+		bull->update(windowSize);
+
+		if (bull->getGlobalBounds().left > windowSize.x || bull->getGlobalBounds().left < 0 || bull->getGlobalBounds().top > windowSize.y || bull->getGlobalBounds().top < 0)
+			goto delBullet;
+
+		for (auto astr = astroids.begin(); astr != astroids.end();)
+		{
+			if (bull->getGlobalBounds().intersects(astr->getGlobalBounds()))
+			{
+				astroids.erase(astr);
+				goto delBullet;
+			}
+			else
+				astr++;
+		}
+
+		window.draw(*bull);
+
+		bull++;
+		continue;
+
+	delBullet:
+		bullets.erase(bull);
+	}
+
+	window.draw(player);
 	window.display();
 }
 
@@ -151,7 +183,11 @@ void game(sf::RenderWindow &window, sf::Event &ev, GameState state)
 	switch (state)
 	{
 	case GameState::Play:
-		play(window, ev);
+		play(window, ev, state);
+		break;
+	case GameState::Title:
+		title(window, ev, state);
+		break;
 	default:
 		break;
 	}
@@ -179,6 +215,8 @@ int main()
 	astroid2Texture.loadFromFile("assets/png/astroid2.png");
 	bulletTexture.loadFromFile("assets/png/bullet.png");
 
+	font.loadFromFile("assets/ttf/light_pixel-7.ttf");
+
 	astroid1.setTexture(astroid1Texture);
 	astroid1.setScale(2, 2);
 	astroid2.setTexture(astroid2Texture);
@@ -191,6 +229,14 @@ int main()
 	player.setOrigin(playerTexture.getSize().x / 2, playerTexture.getSize().y / 2);
 	player.setPosition(windowSize.x / 3, windowSize.y / 2);
 
+	titleText.setFillColor(sf::Color(0xfff2b2ff));
+	titleText.setOutlineColor(sf::Color(0xd3c998ff));
+	titleText.setOutlineThickness(4);
+
+	pressToPlay.setPosition((windowSize.x / 2) - (pressToPlay.getGlobalBounds().width / 2), windowSize.y - (pressToPlay.getGlobalBounds().height * 2));
+	pressToPlay.setOutlineColor(sf::Color(0xaaaabb22));
+	pressToPlay.setOutlineThickness(3);
+
 	// Create non resizable window
 	sf::RenderWindow screen(sf::VideoMode(windowSize.x, windowSize.y), "RPG Thingy", sf::Style::None);
 	sf::Event ev;
@@ -198,7 +244,7 @@ int main()
 	screen.setFramerateLimit(165);
 	screen.setVerticalSyncEnabled(true);
 
-	game(screen, ev, GameState::Play);
+	game(screen, ev, GameState::Title);
 
 	return 0;
 }
