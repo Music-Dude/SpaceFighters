@@ -14,12 +14,13 @@ sf::Clock clck;
 
 Entity bgSprite, player, bullet, astroid1, astroid2;
 std::vector<Entity> astroids, bullets;
+Entity killer;
 Mouse mouse;
 
 sf::Vector2i windowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 
 sf::Text titleText("Space Fighters", font, 72U),
-	pressToPlay("Press any key to play", font, 40U);
+	clickToPlay("Click to play", font, 50U);
 
 enum class GameState
 {
@@ -29,15 +30,16 @@ enum class GameState
 	GameOver
 };
 
-void title(sf::RenderWindow &window, sf::Event &ev, GameState &state)
+void gameOver(sf::RenderWindow &window, sf::Event &ev, GameState &state)
 {
-	titleText.setPosition(sin(clck.getElapsedTime().asSeconds()) * 50 + (windowSize.x / 2) - titleText.getGlobalBounds().width / 2, sin(clck.getElapsedTime().asSeconds() * 2) * 40 + titleText.getGlobalBounds().height);
-
+	titleText.setPosition(sin(clck.getElapsedTime().asSeconds()) * 60 + (windowSize.x / 2) - titleText.getGlobalBounds().width / 2, sin(clck.getElapsedTime().asSeconds() * 2) * 40 + titleText.getGlobalBounds().height);
 	window.draw(bgSprite);
+	window.draw(killer);
+	window.draw(player);
 	window.draw(titleText);
 
 	if (sin(clck.getElapsedTime().asSeconds() * 4) > 0.2)
-		window.draw(pressToPlay);
+		window.draw(clickToPlay);
 
 	window.display();
 
@@ -49,7 +51,39 @@ void title(sf::RenderWindow &window, sf::Event &ev, GameState &state)
 			window.close();
 			break;
 		case sf::Event::MouseButtonReleased:
-		case sf::Event::KeyReleased:
+			// reset player
+			player.setPosition(windowSize.x / 3, windowSize.y / 2);
+
+			// lower opacity means motion blur
+			bgSprite.setColor(sf::Color(0xffffff55));
+			state = GameState::Play;
+			return;
+		default:
+			break;
+		}
+	}
+}
+
+void title(sf::RenderWindow &window, sf::Event &ev, GameState &state)
+{
+	titleText.setPosition(sin(clck.getElapsedTime().asSeconds()) * 50 + (windowSize.x / 2) - titleText.getGlobalBounds().width / 2, sin(clck.getElapsedTime().asSeconds() * 2) * 40 + titleText.getGlobalBounds().height);
+
+	window.draw(bgSprite);
+	window.draw(titleText);
+
+	if (sin(clck.getElapsedTime().asSeconds() * 4) > 0.2)
+		window.draw(clickToPlay);
+
+	window.display();
+
+	while (window.pollEvent(ev))
+	{
+		switch (ev.type)
+		{
+		case sf::Event::Closed:
+			window.close();
+			break;
+		case sf::Event::MouseButtonReleased:
 			// lower opacity means motion blur
 			bgSprite.setColor(sf::Color(0xffffff55));
 			state = GameState::Play;
@@ -135,10 +169,37 @@ void play(sf::RenderWindow &window, sf::Event &ev, GameState &state)
 	{
 		astr->update(windowSize);
 
+		// player touched astroid, game over
 		if (astr->getGlobalBounds().intersects(player.getGlobalBounds()))
+		{
+			killer = *astr;
+
 			state = GameState::GameOver;
 
-		if (astr->getGlobalBounds().left > windowSize.x || astr->getGlobalBounds().left < 0 || astr->getGlobalBounds().top > windowSize.y || astr->getGlobalBounds().top < 0)
+			player.setVelocity(0, 0);
+
+			// change messages
+			titleText.setString("Game over!");
+			clickToPlay.setString("Click to play again");
+
+			clickToPlay.setFillColor(sf::Color(0xaaaaaaee));
+			clickToPlay.setOutlineColor(sf::Color(0x777777aa));
+
+			// clear vectors and free memory
+			astroids.clear();
+			astroids.shrink_to_fit();
+
+			bullets.clear();
+			bullets.shrink_to_fit();
+
+			clickToPlay.setPosition((windowSize.x / 2) - (clickToPlay.getGlobalBounds().width / 2), windowSize.y - (clickToPlay.getGlobalBounds().height * 4));
+
+			// increase motion blur
+			bgSprite.setColor(sf::Color(0xffffff22));
+
+			return;
+		}
+		else if (astr->getGlobalBounds().left > windowSize.x || astr->getGlobalBounds().left < 0 || astr->getGlobalBounds().top > windowSize.y || astr->getGlobalBounds().top < 0)
 			astroids.erase(astr);
 		else
 		{
@@ -188,6 +249,8 @@ void game(sf::RenderWindow &window, sf::Event &ev, GameState state)
 	case GameState::Title:
 		title(window, ev, state);
 		break;
+	case GameState::GameOver:
+		gameOver(window, ev, state);
 	default:
 		break;
 	}
@@ -233,13 +296,13 @@ int main()
 	titleText.setOutlineColor(sf::Color(0xd3c998ff));
 	titleText.setOutlineThickness(4);
 
-	pressToPlay.setPosition((windowSize.x / 2) - (pressToPlay.getGlobalBounds().width / 2), windowSize.y - (pressToPlay.getGlobalBounds().height * 2));
-	pressToPlay.setFillColor(sf::Color(0xffffefff));
-	pressToPlay.setOutlineColor(sf::Color(0xffffff88));
-	pressToPlay.setOutlineThickness(2);
+	clickToPlay.setPosition((windowSize.x / 2) - (clickToPlay.getGlobalBounds().width / 2), windowSize.y - (clickToPlay.getGlobalBounds().height * 2));
+	clickToPlay.setFillColor(sf::Color(0xffffefff));
+	clickToPlay.setOutlineColor(sf::Color(0xffffff88));
+	clickToPlay.setOutlineThickness(2);
 
 	// Create non resizable window
-	sf::RenderWindow screen(sf::VideoMode(windowSize.x, windowSize.y), "RPG Thingy", sf::Style::None);
+	sf::RenderWindow screen(sf::VideoMode(windowSize.x, windowSize.y), "Space Fighters", sf::Style::None);
 	sf::Event ev;
 
 	screen.setFramerateLimit(165);
