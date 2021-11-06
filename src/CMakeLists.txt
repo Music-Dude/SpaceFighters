@@ -1,14 +1,17 @@
 cmake_minimum_required(VERSION 3.10.0)
 
-set(CMAKE_BINARY_DIR "..")
-set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
-
+# compile source files
 add_executable(${PROJECT_NAME}
     item.cpp
     main.cpp
     entity.cpp
 )
 
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
-find_package(SFML COMPONENTS graphics window system audio)
+# output to build dir
+set_target_properties(${PROJECT_NAME}
+    PROPERTIES
+       RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
+)
+
+# link SFML in executable
 target_link_libraries(${PROJECT_NAME} ${SFML_LIBRARIES})

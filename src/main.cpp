@@ -98,6 +98,8 @@ void play(sf::RenderWindow &window, sf::Event &ev)
 			mouse.x = ev.mouseMove.x;
 			mouse.y = ev.mouseMove.y;
 			break;
+		default:
+			break;
 		}
 	}
 
