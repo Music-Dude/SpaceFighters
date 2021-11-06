@@ -129,6 +129,8 @@ int main()
 				mouse.x = ev.mouseMove.x;
 				mouse.y = ev.mouseMove.y;
 				break;
+            default:
+                break;
 			}
 		}
 
