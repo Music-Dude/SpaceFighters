@@ -101,26 +101,12 @@ void Game::play()
 		case sf::Event::Closed:
 			m_window.close();
 			break;
-		case sf::Event::MouseButtonPressed:
-			if (m_event.mouseButton.button == sf::Mouse::Left)
-				m_mouse.lDown = true;
-			if (m_event.mouseButton.button == sf::Mouse::Right)
-				m_mouse.rDown = true;
-			break;
-		case sf::Event::MouseButtonReleased:
-			if (m_event.mouseButton.button == sf::Mouse::Left)
-				m_mouse.lDown = false;
-			if (m_event.mouseButton.button == sf::Mouse::Right)
-				m_mouse.rDown = false;
-			break;
-		case sf::Event::MouseMoved:
-			m_mouse.x = m_event.mouseMove.x;
-			m_mouse.y = m_event.mouseMove.y;
-			break;
 		default:
 			break;
 		}
 	}
+
+	m_mouse = sf::Mouse::getPosition(m_window);
 
 	// Rotate player to face mouse
 	player.setRotation(degrees(atan2(m_mouse.y - player.getPosition().y, m_mouse.x - player.getPosition().x)) + 90);
@@ -140,7 +126,7 @@ void Game::play()
 	}
 
 	// limit shooting to 10/s
-	if (m_clock.getElapsedTime().asSeconds() > 0.1 && m_mouse.lDown)
+	if (m_clock.getElapsedTime().asSeconds() > 0.1 && sf::Mouse::isButtonPressed(sf::Mouse::Left))
 	{
 		bullet.setPosition(player.getPosition().x - bullet.getGlobalBounds().width / 2, player.getPosition().y - bullet.getGlobalBounds().height / 2);
 		bullet.setVelocity(0, 0);

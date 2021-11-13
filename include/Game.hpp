@@ -31,8 +31,9 @@ private:
 	sf::RenderWindow m_window;
 	sf::Event m_event;
 	sf::Clock m_clock;
-	Mouse m_mouse;
-	std::vector<Entity> m_astroids, m_bullets;
+	sf::Vector2i m_mouse;
+	std::vector<Entity>
+		m_astroids, m_bullets;
 
 	// Advance to the next frame, checking state and events
 	void frame();
