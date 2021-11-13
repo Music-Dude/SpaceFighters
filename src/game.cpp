@@ -6,8 +6,8 @@ Game::Game()
 	m_window.setFramerateLimit(165);
 	m_window.setVerticalSyncEnabled(true);
 
-	bgSprite.setTextureRect(sf::IntRect(0, 0, m_windowSize.x, m_windowSize.y));
 	player.setPosition(m_windowSize.x / 3, m_windowSize.y / 2);
+	bgSprite.setTextureRect(sf::IntRect(0, 0, m_windowSize.x, m_windowSize.y));
 	clickToPlay.setPosition((m_windowSize.x / 2) - (clickToPlay.getGlobalBounds().width / 2), m_windowSize.y - (clickToPlay.getGlobalBounds().height * 2));
 }
 
@@ -45,6 +45,7 @@ void Game::gameOver()
 	m_window.draw(player);
 	m_window.draw(titleText);
 
+	// Flash text
 	if (sin(m_clock.getElapsedTime().asSeconds() * 4) > 0.2)
 		m_window.draw(clickToPlay);
 
@@ -64,9 +65,7 @@ void Game::gameOver()
 			// lower opacity means motion blur
 			bgSprite.setColor(sf::Color(0xffffff55));
 			m_state = GameState::Play;
-
 			return;
-
 		default:
 			break;
 		}
@@ -96,7 +95,6 @@ void Game::title()
 		case sf::Event::MouseButtonReleased:
 			// lower opacity means motion blur
 			bgSprite.setColor(sf::Color(0xffffff55));
-
 			m_state = GameState::Play;
 			return;
 		default:
@@ -191,7 +189,6 @@ void Game::play()
 
 			// increase motion blur
 			bgSprite.setColor(sf::Color(0xffffff22));
-
 			m_state = GameState::GameOver;
 			return;
 		}

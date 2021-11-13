@@ -14,8 +14,8 @@ inline sf::Text titleText, clickToPlay;
 
 enum class GameState
 {
-	Title,
 	Play,
+	Title,
 	Pause,
 	GameOver
 };
@@ -29,17 +29,17 @@ public:
 	void run();
 
 private:
-	sf::Vector2u m_windowSize;
-	sf::RenderWindow m_window;
 	sf::Event m_event;
 	sf::Clock m_clock;
 	GameState m_state;
 	sf::Vector2i m_mouse;
+	sf::Vector2u m_windowSize;
+	sf::RenderWindow m_window;
 	std::vector<Entity> m_astroids, m_bullets;
 
 	// Game state functions
-	void title();
 	void play();
+	void title();
 	void gameOver();
 };
 
