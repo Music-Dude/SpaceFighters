@@ -2,9 +2,9 @@ cmake_minimum_required(VERSION 3.10.0)
 
 # compile source files
 add_executable(${PROJECT_NAME}
-    item.cpp
-    main.cpp
     entity.cpp
+    game.cpp
+    main.cpp
 )
 
 # output to build dir

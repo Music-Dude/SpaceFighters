@@ -6,6 +6,8 @@ struct Mouse
 {
 	float x, y;
 	bool lDown, rDown;
+
+	Mouse() : x(0), y(0), lDown(false), rDown(false) {}
 };
 
 // Convert radian value to degreees

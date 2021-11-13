@@ -11,7 +11,7 @@ Entity::Entity(sf::Texture &texture)
 {
 }
 
-void Entity::update(sf::Vector2i windowSize)
+void Entity::update(sf::Vector2u windowSize)
 {
 	if (getPosition().x > windowSize.x)
 		setPosition(0, getPosition().y);

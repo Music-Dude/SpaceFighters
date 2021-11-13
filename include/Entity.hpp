@@ -2,7 +2,6 @@
 #define ENTITY_H
 
 #include <SFML/Graphics.hpp>
-#include "Item.hpp"
 
 class Entity : public sf::Sprite
 {
@@ -11,7 +10,7 @@ public:
 	Entity();
 
 	// Move player according to velocity
-	void update(sf::Vector2i windowSize);
+	void update(sf::Vector2u windowSize);
 
 	/// \brief Set corresponding x and y velocities given and angle and power
 	/// \param magnitude Power to scale velocities with
