@@ -24,6 +24,8 @@ class Game
 {
 public:
 	Game();
+
+	// Start main loop
 	void run();
 
 private:
@@ -31,12 +33,9 @@ private:
 	sf::RenderWindow m_window;
 	sf::Event m_event;
 	sf::Clock m_clock;
+	GameState m_state;
 	sf::Vector2i m_mouse;
-	std::vector<Entity>
-		m_astroids, m_bullets;
-
-	// Advance to the next frame, checking state and events
-	void frame();
+	std::vector<Entity> m_astroids, m_bullets;
 
 	// Game state functions
 	void title();

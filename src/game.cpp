@@ -13,7 +13,26 @@ Game::Game()
 
 void Game::run()
 {
-	title();
+	m_state = GameState::Title;
+
+	while (m_window.isOpen())
+	{
+		switch (m_state)
+		{
+		case GameState::Title:
+			title();
+			break;
+		case GameState::Play:
+			play();
+			break;
+		case GameState::Pause:
+			// TODO: implement pause
+			break;
+		case GameState::GameOver:
+			gameOver();
+			break;
+		}
+	}
 }
 
 void Game::gameOver()
@@ -44,16 +63,14 @@ void Game::gameOver()
 
 			// lower opacity means motion blur
 			bgSprite.setColor(sf::Color(0xffffff55));
-			play();
+			m_state = GameState::Play;
+
 			return;
 
 		default:
 			break;
 		}
 	}
-
-	if (m_window.isOpen())
-		gameOver();
 }
 
 void Game::title()
@@ -80,16 +97,12 @@ void Game::title()
 			// lower opacity means motion blur
 			bgSprite.setColor(sf::Color(0xffffff55));
 
-			play();
+			m_state = GameState::Play;
 			return;
-
 		default:
 			break;
 		}
 	}
-
-	if (m_window.isOpen())
-		title();
 }
 
 void Game::play()
@@ -179,7 +192,7 @@ void Game::play()
 			// increase motion blur
 			bgSprite.setColor(sf::Color(0xffffff22));
 
-			gameOver();
+			m_state = GameState::GameOver;
 			return;
 		}
 		else if (astr->getGlobalBounds().left > m_windowSize.x || astr->getGlobalBounds().left < 0 || astr->getGlobalBounds().top > m_windowSize.y || astr->getGlobalBounds().top < 0)
@@ -220,7 +233,4 @@ void Game::play()
 
 	m_window.draw(player);
 	m_window.display();
-
-	if (m_window.isOpen())
-		play();
 }
